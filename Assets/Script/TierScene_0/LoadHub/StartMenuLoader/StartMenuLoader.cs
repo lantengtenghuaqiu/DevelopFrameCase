@@ -18,11 +18,11 @@ public partial class StartMenuLoader : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        SceneLoader.Instance();
+        // SceneLoader.CreateInstance();
     }
     void Start()
     {
-        btn_GameStart.onClick.AddListener(() => { SceneLoader.Instance().LoadScene("Tier_1_Scene"); StartMenuGroup.SetActive(false); });
+        // btn_GameStart.onClick.AddListener(() => { SceneLoader.Instance().LoadScene("Tier_1_Scene"); StartMenuGroup.SetActive(false); });
     }
 
     // Update is called once per frame

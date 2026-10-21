@@ -1,31 +1,18 @@
 
-using System;
 using UnityEngine;
 
 
 # region Screen Information -------------------------------
-public sealed class ScreenAttribute : SingletonDoubleLock<ScreenAttribute>
+public sealed class ScreenAttribute
 {
-    public static ScreenAttribute Instance()
-    {
-        {
-            if (SingletonDoubleLock<ScreenAttribute>._instance == null)
-            {
-                lock (SingletonDoubleLock<ScreenAttribute>._locker)
-                {
-                    if (SingletonDoubleLock<ScreenAttribute>._instance == null)
-                    {
-                        SingletonDoubleLock<ScreenAttribute>._instance = new ScreenAttribute();
-                    }
-                }
-            }
-            return SingletonDoubleLock<ScreenAttribute>._instance;
-        }
-    }
     private ScreenAttribute()
     {
         _width = Screen.width;
         _height = Screen.height;
+    }
+    static ScreenAttribute()
+    {
+        SingletonFactory<ScreenAttribute>.InitiateInstance(() => new ScreenAttribute());
     }
     readonly float _width;
     readonly float _height;
@@ -37,7 +24,7 @@ public sealed class ScreenAttribute : SingletonDoubleLock<ScreenAttribute>
 
 
 # region Mouse Information -------------------------------------
-[Flags]
+[System.Flags]
 public enum MouseStateCode
 {
     COUNTMASK = (1 << 5) - 1, // 31
@@ -78,23 +65,11 @@ public sealed class MouseEvent : EventKit<MouseEvent, DeviceEvent>
     private MouseEvent() : base()
     {
         eventStateCode = new MouseStateCode();
+        eventStateCode = MouseStateCode.OnIdle;
     }
-    public static MouseEvent Instance()
+    static MouseEvent()
     {
-        {
-            if (SingletonDoubleLock<MouseEvent>._instance == null)
-            {
-                lock (SingletonDoubleLock<MouseEvent>._locker)
-                {
-                    if (SingletonDoubleLock<MouseEvent>._instance == null)
-                    {
-                        SingletonDoubleLock<MouseEvent>._instance = new MouseEvent();
-                    }
-                }
-            }
-            return SingletonDoubleLock<MouseEvent>._instance;
-
-        }
+        SingletonFactory<MouseEvent>.InitiateInstance(() => new MouseEvent());
     }
     #endregion --------------------------------------------
     #region Initiating Argument ---------------------------
@@ -112,6 +87,7 @@ public sealed class MouseEvent : EventKit<MouseEvent, DeviceEvent>
 
     protected override void Recyle()
     {
+        Debug.Log("当前鼠标状态: " + eventStateCode);
         // 当事件停止时,还需要清理一次,才应该完全卡住,所以需要一个开关进行判断
         MouseEventRecycle();
     }

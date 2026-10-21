@@ -1,5 +1,5 @@
 
-public abstract class EventKit<T, K> : SingletonDoubleLock<T>
+public abstract class EventKit<T, K>
 {
     protected EventKit() { lockKit = new LockKitRegister<K>(); }
     public LockKitRegister<K> lockKit;

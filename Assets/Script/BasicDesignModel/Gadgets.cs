@@ -32,26 +32,13 @@ public struct SwitchLock
     }
 }
 
-public sealed class LockKitCatalog : SingletonDoubleLock<LockKitCatalog>
+public abstract class LockKitCatalog
 {
-    public static LockKitCatalog Instance()
-    {
-        if (SingletonDoubleLock<LockKitCatalog>._instance == null)
-        {
-            lock (SingletonDoubleLock<LockKitCatalog>._locker)
-            {
-                if (SingletonDoubleLock<LockKitCatalog>._instance == null)
-                {
-                    SingletonDoubleLock<LockKitCatalog>._instance = new LockKitCatalog();
-                }
-            }
-        }
-        return SingletonDoubleLock<LockKitCatalog>._instance;
-    }
-    private LockKitCatalog() { }
+    protected LockKitCatalog(Type type) { Include(type); }
+
     // 全局锁应该由外部事件锁住而不是内部某一事件锁住        
     public static bool lockGlobal;
-    private Dictionary<Type, bool> lockBook = new Dictionary<Type, bool>();
+    private static Dictionary<Type, bool> lockBook = new Dictionary<Type, bool>();
     public void Include(Type type)
     {
         bool get;
@@ -60,14 +47,14 @@ public sealed class LockKitCatalog : SingletonDoubleLock<LockKitCatalog>
             lockBook[type] = false;
         }
     }
-    public bool Find(Type type)
+    public static bool Find(Type type)
     {
         bool get = false;
         lockBook.TryGetValue(type, out get);
 
         return get;
     }
-    public void OpenShared(Type type)
+    public static void OpenShared(Type type)
     {
         bool get = false;
         if (lockBook.TryGetValue(type, out get))
@@ -76,7 +63,7 @@ public sealed class LockKitCatalog : SingletonDoubleLock<LockKitCatalog>
             throw new ArgumentException("锁缺失: " + type.ToString());
     }
 
-    public void LockShared(Type type)
+    public static void LockShared(Type type)
     {
         bool get = false;
         if (lockBook.TryGetValue(type, out get))
@@ -84,18 +71,16 @@ public sealed class LockKitCatalog : SingletonDoubleLock<LockKitCatalog>
         else
             throw new ArgumentException("锁缺失: " + type.ToString());
     }
-
-
-
 }
-public sealed class LockKitRegister<T>
+public sealed class LockKitRegister<T> : LockKitCatalog
 {
     private static Type type = typeof(T);
     private bool lockLocal;
-    public LockKitRegister() { LockKitCatalog.Instance().Include(type); }
+    public LockKitRegister() : base(type) { }
+
     public bool CheckLock()
     {
-        if (lockLocal || LockKitCatalog.Instance().Find(type) || LockKitCatalog.lockGlobal) { return true; }
+        if (lockLocal || Find(type) || lockGlobal) { return true; }
         return false;
     }
 
